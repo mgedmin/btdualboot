@@ -21,7 +21,11 @@ This script can automate some of the work.
 Current status:
 
 - if you run the script as root, it'll print all the paired devices and their
-  link keys from the Windows registry and /var/lib/bluetooth
+  link keys from the Windows registry and /var/lib/bluetooth (if you run it as
+  a regular user, it'll only show the Windows registry)
 
-- you need to mount the Windows partition and tell the script where the
-  registry lives by creating a btdualboot.ini
+- you need to tell the script where the registry lives by creating a
+  btdualboot.ini
+
+- if you manually edit link keys in /var/lib/bluetooth then you need to
+  ``service bluetooth restart`` afterwards for bluetoothd to notice changes

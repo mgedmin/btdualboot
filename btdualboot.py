@@ -2,9 +2,10 @@ import argparse
 import configparser
 import os
 import pathlib
+import subprocess
+import time
 
 from Registry import Registry
-
 
 __version__ = "0.1"
 
@@ -51,6 +52,16 @@ def read_link_key(filename):
     return cp.get('LinkKey', 'Key', fallback=None)
 
 
+def mount_partition(device_name):
+    p = subprocess.run(["udisksctl", "mount", "-b", device_name])
+    return p.returncode == 0
+
+
+def unmount_partition(device_name):
+    p = subprocess.run(["udisksctl", "unmount", "-b", device_name])
+    return p.returncode == 0
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=(
@@ -64,7 +75,15 @@ def main():
     args = parser.parse_args()
     cp = load_config(args.config_file)
 
-    reg = Registry.Registry(cp.get("btdualboot", "RegistryFile"))
+    registry_file = cp.get("btdualboot", "RegistryFile")
+    registry_partition = cp.get("btdualboot", "RegistryPartition",
+                                fallback=None)
+    if not os.path.exists(registry_file) and registry_partition:
+        mounted = mount_partition(registry_partition)
+    else:
+        mounted = False
+
+    reg = Registry.Registry(registry_file)
     # NB: I think we want HKEY_CURRENT_CONFIG actually, but I don't know how to
     # determine which one that is!
     key = reg.open("ControlSet001\\Services\\BTHPort\\Parameters\\Keys")
@@ -87,3 +106,11 @@ def main():
                         print(f"      link key {format_ascii_hex(key)}")
             except PermissionError:
                 print("    unavailable when not running as root")
+
+    del reg
+
+    if mounted:
+        for n in range(3):
+            if unmount_partition(cp.get("btdualboot", "RegistryPartition")):
+                break
+            time.sleep(1)
