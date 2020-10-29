@@ -1,3 +1,4 @@
+.PHONY: all
 all: bin/btdualboot
 
 bin/btdualboot: | bin .venv
@@ -10,3 +11,7 @@ bin:
 .venv:
 	python3 -m venv .venv
 	.venv/bin/pip install -U pip
+
+.PHONY: clean
+clean:
+	rm -rf .venv bin
