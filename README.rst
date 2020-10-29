@@ -20,12 +20,32 @@ This script can automate some of the work.
 
 Current status:
 
+- you need to tell the script where the registry lives by editing
+  ``btdualboot.ini``
+
 - if you run the script as root, it'll print all the paired devices and their
   link keys from the Windows registry and ``/var/lib/bluetooth`` (if you run it as
   a regular user, it'll only show the Windows registry)
 
-- you need to tell the script where the registry lives by creating a
-  ``btdualboot.ini``
-
 - if you manually edit link keys in /``var/lib/bluetooth`` then you need to
   ``service bluetooth restart`` afterwards for bluetoothd to notice changes
+
+- you can manually edit link keys in the Windows registry by using ``chntpw``.
+
+
+Here's an example session::
+
+    sudo apt install chntpw rlwrap
+    udisksctl mount -b /dev/disk/by-label/Windows
+    cd /media/$USER/Windows/Windows/System32/config/
+    rlwrap chntpw -e SYSTEM
+    > dir ControlSet001\Services\BTHPORT\Parameters\Keys
+    > cd ControlSet001\Services\BTHPORT\Parameters\Keys\xxxxxxxxxxxx
+    > dir
+    > ed yyyyyyyyyyyy
+    new length: same
+    . : 0 ZZ ZZ ZZ ZZ ZZ ZZ ZZ ZZ ZZ ZZ ZZ ZZ ZZ ZZ ZZ ZZ
+    . a 0
+    . s
+    > q
+
