@@ -4,18 +4,19 @@ import os
 import pathlib
 import subprocess
 import time
+from typing import NamedTuple, Optional
 
 from Registry import Registry
 
-__version__ = "0.1"
+__version__ = "0.2"
 
 
-def get_xdg_config_dir():
+def get_xdg_config_dir() -> pathlib.Path:
     return pathlib.Path(
         os.getenv('XDG_CONFIG_HOME', os.path.expanduser("~/.config")))
 
 
-def load_config(config_file):
+def load_config(config_file: os.PathLike) -> configparser.ConfigParser:
     cp = configparser.ConfigParser()
     cp.read([
         get_xdg_config_dir() / "btdualboot.ini",
@@ -24,7 +25,14 @@ def load_config(config_file):
     return cp
 
 
-def format_ascii_hex(value):
+HexStr = str                # a hex string with colon separators
+CompactHexStr = str         # a hex string without separators
+MacAddress = HexStr                 # MAC address with colon separators
+CompactMacAddress = CompactHexStr   # MAC address without separators
+LinkKey = CompactHexStr              # 32-character hex string w/o separators
+
+
+def format_ascii_hex(value: CompactHexStr | None) -> HexStr | None:
     """Format a value encoded in HEX
 
         >>> format_ascii_hex("AABBCCDDEEFF")
@@ -36,7 +44,7 @@ def format_ascii_hex(value):
     return ":".join(value[n:n+2] for n in range(0, len(value), 2))
 
 
-def format_raw_hex(value):
+def format_raw_hex(value: bytes) -> HexStr:
     r"""Format a bytes value as HEX
 
         >>> format_raw_hex(b"\xAA\xBB\xCC\xDDxEE\xFF")
@@ -46,23 +54,31 @@ def format_raw_hex(value):
     return ":".join(f"{byte:02X}" for byte in value)
 
 
-def read_link_key(filename):
+class DeviceInfo(NamedTuple):
+    mac: MacAddress
+    name: Optional[str]
+    link_key: Optional[LinkKey]
+
+
+def read_link_key(filename: os.PathLike, mac: MacAddress) -> DeviceInfo:
     cp = configparser.ConfigParser()
     cp.read([filename])
-    return cp.get('LinkKey', 'Key', fallback=None)
+    name = cp.get('General', 'Name', fallback=None)
+    link_key = cp.get('LinkKey', 'Key', fallback=None)
+    return DeviceInfo(mac=mac, name=name, link_key=link_key)
 
 
-def mount_partition(device_name):
+def mount_partition(device_name: str) -> bool:
     p = subprocess.run(["udisksctl", "mount", "-b", device_name])
     return p.returncode == 0
 
 
-def unmount_partition(device_name):
+def unmount_partition(device_name: str) -> bool:
     p = subprocess.run(["udisksctl", "unmount", "-b", device_name])
     return p.returncode == 0
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Synchronize Bluetooth pairing keys between Linux and Windows"))
@@ -95,17 +111,18 @@ def main():
             print(f"    paired with {format_ascii_hex(value.name())}")
             print(f"      link key {format_raw_hex(value.value())}")
     print("Linux information:")
-    for dirname in pathlib.Path('/var/lib/bluetooth').iterdir():
-        if ':' in dirname.name:
-            print(f"  Host controller {dirname.name}")
-            try:
+    try:
+        for dirname in pathlib.Path('/var/lib/bluetooth').iterdir():
+            if ':' in dirname.name:
+                print(f"  Host controller {dirname.name}")
                 for subdir in dirname.iterdir():
                     if ':' in subdir.name:
-                        print(f"    paired with {subdir.name}")
-                        key = read_link_key(subdir / "info")
-                        print(f"      link key {format_ascii_hex(key)}")
-            except PermissionError:
-                print("    unavailable when not running as root")
+                        device = read_link_key(subdir / "info", subdir.name)
+                        print(f"    paired with {device.name} ({device.mac})")
+                        key = format_ascii_hex(device.link_key)
+                        print(f"      link key {key}")
+    except PermissionError:
+        print("  unavailable when not running as root")
 
     del reg
 

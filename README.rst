@@ -27,7 +27,7 @@ Current status:
   link keys from the Windows registry and ``/var/lib/bluetooth`` (if you run it as
   a regular user, it'll only show the Windows registry)
 
-- if you manually edit link keys in /``var/lib/bluetooth`` then you need to
+- if you manually edit link keys in ``/var/lib/bluetooth`` then you need to
   ``service bluetooth restart`` afterwards for bluetoothd to notice changes
 
 - you can manually edit link keys in the Windows registry by using ``chntpw``.
