@@ -78,6 +78,23 @@ def unmount_partition(device_name: str) -> bool:
     return p.returncode == 0
 
 
+def display_instructions(
+    host_controller: MacAddress,
+    mac: MacAddress,
+    link_key: HexStr,
+) -> None:
+    print("About to run chntpw.")
+    print("You will want to execute the following commands:")
+    hc = host_controller.replace(':', '').lower()
+    print(f"  > cd ControlSet001\\Services\\BTHPORT\\Parameters\\Keys\\{hc}")
+    key = mac.replace(':', '').lower()
+    print(f"  > ed {key}")
+    print("  new length: (press Enter to keep same)")
+    print(f"  . : 0 {link_key.replace(':', ' ')}")
+    print("  . s")
+    print("  > q")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
@@ -88,6 +105,9 @@ def main() -> None:
     parser.add_argument(
         "-c", "--config-file", default="btdualboot.ini",
         help="use a different configuration file (default: %(default)s)")
+    parser.add_argument(
+        "--edit-registry", action="store_true",
+        help="run chntpw to edit the Windows registry")
     args = parser.parse_args()
     cp = load_config(args.config_file)
 
@@ -104,27 +124,48 @@ def main() -> None:
     # determine which one that is!
     key = reg.open("ControlSet001\\Services\\BTHPort\\Parameters\\Keys")
 
+    hc = "xxxxxxxxxxxx"  # a placeholder for instruction display
+    windows_keys = {}
+    mismatches = {}
     print("Windows registry information:")
     for subkey in key.subkeys():
+        hc = subkey.name().replace(':', '')
         print(f"  Host controller {format_ascii_hex(subkey.name())}")
         for value in subkey.values():
-            print(f"    paired with {format_ascii_hex(value.name())}")
-            print(f"      link key {format_raw_hex(value.value())}")
+            mac = format_ascii_hex(value.name().upper())
+            link_key = format_raw_hex(value.value())
+            print(f"    paired with {mac}")
+            print(f"      link key {link_key}")
+            windows_keys[mac] = link_key
     print("Linux information:")
     try:
         for dirname in pathlib.Path('/var/lib/bluetooth').iterdir():
             if ':' in dirname.name:
                 print(f"  Host controller {dirname.name}")
+                hc = dirname.name.replace(':', '')
                 for subdir in dirname.iterdir():
                     if ':' in subdir.name:
                         device = read_link_key(subdir / "info", subdir.name)
                         print(f"    paired with {device.name} ({device.mac})")
                         key = format_ascii_hex(device.link_key)
                         print(f"      link key {key}")
+                        if device.mac in windows_keys:
+                            if key != windows_keys[device.mac]:
+                                mismatches[device.mac] = key
     except PermissionError:
         print("  unavailable when not running as root")
 
     del reg
+
+    if args.edit_registry:
+        dev = "yyyyyyyyyyyy"  # placeholder for instruction display
+        key = "XX" * 16
+        if mismatches:
+            dev, key = list(mismatches.items())[0]
+        # TODO: check if rlwrap is installed
+        # TODO: check if chntpw is installed, print error message if not
+        display_instructions(hc, dev, key)
+        subprocess.run(["rlwrap", "chntpw", "-e", registry_file])
 
     if mounted:
         for n in range(3):
