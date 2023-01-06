@@ -30,7 +30,8 @@ Current status:
 - if you manually edit link keys in ``/var/lib/bluetooth`` then you need to
   ``service bluetooth restart`` afterwards for bluetoothd to notice changes
 
-- you can manually edit link keys in the Windows registry by using ``chntpw``.
+- you can manually edit link keys in the Windows registry by using ``chntpw``,
+  this is partially automated passing ``--edit-registry`` to the script.
 
 
 Here's an example session::
