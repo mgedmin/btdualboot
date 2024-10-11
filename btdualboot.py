@@ -110,6 +110,9 @@ def main() -> None:
     parser.add_argument(
         "--edit-registry", action="store_true",
         help="run chntpw to edit the Windows registry")
+    parser.add_argument(
+        "--unmount", action="store_true",
+        help="unconditionally unmount the Windows partition")
     args = parser.parse_args()
     cp = load_config(args.config_file)
 
@@ -126,7 +129,7 @@ def main() -> None:
     try:
         do_work(args, cp, registry_file)
     finally:
-        if mounted:
+        if mounted or args.unmount:
             for n in range(3):
                 if unmount_partition(registry_partition):
                     break
