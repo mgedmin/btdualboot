@@ -1,0 +1,43 @@
+[project]
+name = "btdualboot"
+authors = [
+    {name = "Marius Gedminas", email = "marius@gedmin.as"},
+]
+description = "Synchronize Bluetooth pairing keys between Windows and Linux"
+readme = "README.rst"
+keywords = ["bluetooth", "linux", "windows"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "License :: OSI Approved :: GNU General Public License (GPL)",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+license = {text = "GPL"}
+requires-python = ">=3.6"
+dependencies = [
+    "python-registry",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/mgedmin/btdualboot"
+
+[project.scripts]
+btdualboot = "btdualboot:main"
+
+[build-system]
+requires = ["setuptools"]
+
+[tool.setuptools]
+py-modules = ["btdualboot"]
+
+[tool.setuptools.dynamic]
+version = {attr = "btdualboot.__version__"}

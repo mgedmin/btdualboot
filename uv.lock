@@ -1,0 +1,41 @@
+version = 1
+requires-python = ">=3.6"
+
+[[package]]
+name = "btdualboot"
+version = "0.3"
+source = { editable = "." }
+dependencies = [
+    { name = "python-registry" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "python-registry" }]
+
+[[package]]
+name = "enum-compat"
+version = "0.0.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/41/46/8ed2368976d934652d8f33f1fdd86f5580fab45e890c90a848e83097a093/enum-compat-0.0.3.tar.gz", hash = "sha256:3677daabed56a6f724451d585662253d8fb4e5569845aafa8bb0da36b1a8751e", size = 1389 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/55/ae/467bc4509246283bb59746e21a1a2f5a8aecbef56b1fa6eaca78cd438c8b/enum_compat-0.0.3-py3-none-any.whl", hash = "sha256:88091b617c7fc3bbbceae50db5958023c48dc40b50520005aa3bf27f8f7ea157", size = 1322 },
+]
+
+[[package]]
+name = "python-registry"
+version = "1.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "enum-compat" },
+    { name = "unicodecsv" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a4/82/c9ae8e9764eae863a4d63c05d5f2d767e392b523c2976c16c56f9a3b17b4/python-registry-1.3.1.tar.gz", hash = "sha256:99185f67d5601be3e7843e55902d5769aea1740869b0882f34ff1bd4b43b1eb2", size = 20336 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f1/0f/2605f98bb9c7ef92f926fdf3295583363fe42fc6e8f64cf38b24a029e767/python_registry-1.3.1-py3-none-any.whl", hash = "sha256:b5b8ae07c271dce12dacd24e16af8aa8d56167ebdb360112a4f152b6d04a4ca9", size = 23553 },
+]
+
+[[package]]
+name = "unicodecsv"
+version = "0.14.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/6f/a4/691ab63b17505a26096608cc309960b5a6bdf39e4ba1a793d5f9b1a53270/unicodecsv-0.14.1.tar.gz", hash = "sha256:018c08037d48649a0412063ff4eda26eaa81eff1546dbffa51fa5293276ff7fc", size = 10267 }
