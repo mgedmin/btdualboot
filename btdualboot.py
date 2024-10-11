@@ -2,13 +2,15 @@ import argparse
 import configparser
 import os
 import pathlib
+import shutil
 import subprocess
+import sys
 import time
 from typing import NamedTuple, Optional
 
 from Registry import Registry
 
-__version__ = "0.2"
+__version__ = "0.3"
 
 
 def get_xdg_config_dir() -> pathlib.Path:
@@ -121,6 +123,20 @@ def main() -> None:
     else:
         mounted = False
 
+    try:
+        do_work(args, cp, registry_file)
+    finally:
+        if mounted:
+            for n in range(3):
+                if unmount_partition(registry_partition):
+                    break
+                time.sleep(1)
+
+
+def do_work(args, cp, registry_file):
+    if not os.path.exists(registry_file):
+        sys.exit(f"Registry file {registry_file} not found!")
+
     reg = Registry.Registry(registry_file)
     # NB: I think we want HKEY_CURRENT_CONFIG actually, but I don't know how to
     # determine which one that is!
@@ -164,13 +180,9 @@ def main() -> None:
         key = "XX" * 16
         if mismatches:
             dev, key = list(mismatches.items())[0]
-        # TODO: check if rlwrap is installed
-        # TODO: check if chntpw is installed, print error message if not
+        if not shutil.which('rlwrap'):
+            sys.exit('rlwrap not found in PATH')
+        if not shutil.which('chntpw'):
+            sys.exit('chntpw not found in PATH')
         display_instructions(hc, dev, key)
         subprocess.run(["rlwrap", "chntpw", "-e", registry_file])
-
-    if mounted:
-        for n in range(3):
-            if unmount_partition(cp.get("btdualboot", "RegistryPartition")):
-                break
-            time.sleep(1)
