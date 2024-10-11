@@ -111,7 +111,9 @@ def main() -> None:
     args = parser.parse_args()
     cp = load_config(args.config_file)
 
-    registry_file = cp.get("btdualboot", "RegistryFile")
+    registry_file = cp.get("btdualboot", "RegistryFile").replace(
+        '$USER', os.getenv('USER')
+    )
     registry_partition = cp.get("btdualboot", "RegistryPartition",
                                 fallback=None)
     if not os.path.exists(registry_file) and registry_partition:
