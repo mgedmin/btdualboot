@@ -50,3 +50,8 @@ Here's an example session::
     . s
     > q
 
+
+Alternatives
+------------
+
+- https://github.com/x2es/bt-dualboot is mentioned by the ArchLinux wiki
